@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WeShare</title>
+<link href="css/welcome.css" rel="stylesheet">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+</style>
+<script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() 
+{
+  	var PAGE_NUM = 0;
+  	var PAGE_SIZE = 10;
+  	var USER_ID ="";
+  	
+    if (typeof(Storage) !== "undefined") 
+    {
+        if (sessionStorage.userName)
+        {
+          	$("#lblUserName").text(sessionStorage.userName);
+        } 
+        if (sessionStorage.userId)
+        {
+        	USER_ID = sessionStorage.userId;
+        } 
+    }
+  	
+  $("#btnPost").click(function()
+    {
+      	var message = $("#txtMsg").val();
+      	
+        var msgModel = {
+            message : message
+    	};
+        var requestJSON = JSON.stringify(msgModel);
+        $.ajax({
+            type : "POST",
+            url : "http://localhost:8080/postmsg/" + USER_ID,
+            headers : {
+               "Content-Type" : "application/json"
+            },
+            data : requestJSON,
+            success : function(data, status)
+            {
+				$("#divPostErr").html(data);
+				$("#txtMsg").val("");
+            },
+            error : function(data, status, err)
+            {
+				$("#divPostErr").html("Invalid Message. " + data.responseJSON.error);
+				$("#txtMsg").focus();
+            }
+         });
+      });
+
+      $("#btnMyMsg").click(function()
+      {
+      	PAGE_NUM = 0;
+  		getMyMessages();
+       });
+
+      $("#btnMyMsgPrev").click(function()
+      {
+      	PAGE_NUM--;
+  		getMyMessages();
+       });
+      
+      $("#btnMyMsgNext").click(function()
+      {
+      	PAGE_NUM++;
+  		getMyMessages();
+       });
+
+      $("#btnOtherMsg").click(function()
+      {
+        PAGE_NUM = 0;
+      	getOtherMessages();
+       });
+
+      $("#btnOtherMsgPrev").click(function()
+      {
+        PAGE_NUM--;
+      	getOtherMessages();
+       });
+      $("#btnOtherMsgNext").click(function()
+      {
+        PAGE_NUM++;
+      	getOtherMessages();
+       });
+      function getMyMessages()
+      {
+  		$('#tblMyMsg').find('tbody').empty();
+   		$.getJSON("http://localhost:8080/viewmsg/"+ USER_ID + "?page=" + PAGE_NUM, function(result)
+        	{
+         		var i = (PAGE_NUM * PAGE_SIZE) + 1;
+             	$.each(result.content, function(key,value)
+             	{
+             		var myRow = "<tr><td>" + i++ + "</td><td>" + value.message + "</td><td>" + value.createdDate + "</td></tr>";
+                 	$('#tblMyMsg').find('tbody').append(myRow);
+             	});
+             	if (result.last)
+             		hideButton("btnMyMsgNext");
+             	else 
+             		showButton("btnMyMsgNext");
+             	if (result.first)
+             		hideButton("btnMyMsgPrev");
+             	else 
+             		showButton("btnMyMsgPrev");
+             });
+      }
+
+      function getOtherMessages()
+      {
+  		$('#tblOtherMsg').find('tbody').empty();
+      	$.getJSON("http://localhost:8080/viewothermsg/" + USER_ID + "?page=" + PAGE_NUM, function(result)
+      	{
+      		var i =(PAGE_NUM * PAGE_SIZE) + 1;
+          	$.each(result.content, function(key,value)
+          	{
+          		var myRow = "<tr><td>" + i++ + "</td><td>" +value.userName + "</td><td>" + value.message + "</td><td>" + value.createdDate + "</td></tr>";
+              	$('#tblOtherMsg').find('tbody').append(myRow);
+          	});
+         	if (result.last)
+         		hideButton("btnOtherMsgNext");
+         	else 
+         		showButton("btnOtherMsgNext");
+         	if (result.first)
+         		hideButton("btnOtherMsgPrev");
+         	else 
+         		showButton("btnOtherMsgPrev");
+          }); 
+      }
+      function hideButton (btnName)
+      {
+	   	  $("#" + btnName).hide();
+      }
+      function showButton (btnName)
+      {
+    	  $("#" + btnName).show();
+      }
+  });
+ </script>
+
+</head>
+<body>
+
+<h2>Welcome <span id="lblUserName"></span>!</h2>
+
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'newMsg')" id="defaultOpen"><img src="images/newmsg.png" alt="WeShare"/>Post Message</button>
+  <button class="tablinks" onclick="openTab(event, 'myMsg')" id="btnMyMsg"><img src="images/mymsg.png" alt="WeShare"/>My Messages</button>
+  <button class="tablinks" onclick="openTab(event, 'otherMsg')"id="btnOtherMsg"><img src="images/othermsg.png" alt="WeShare"/>Other Messages</button>
+</div>
+
+<div id="newMsg" class="tabcontent">
+  <h3>Post</h3>
+  <textarea rows = "5"  cols ="50" id ="txtMsg" placeholder="Type message here."></textarea><br/>
+<button id ="btnPost">Post</button>
+  <div id ="divPostErr" class="err"></div>
+</div>
+
+<div id="myMsg" class="tabcontent">
+  <h3>My Messages</h3>
+  <div id ="divMyMsgErr">
+  <table id="tblMyMsg" style="table-layout:fixed;width:100%;word-wrap:break-word;" >
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Message</th>
+                <th>Date</th>
+            </tr>
+        <tbody>
+            <tr>
+            </tr>
+        </tbody>
+        <thead>
+    </table>
+  <div><button class = "nav" id ="btnMyMsgPrev">Prev</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class = "nav" id ="btnMyMsgNext">Next</button></div>
+    </div>
+</div>
+
+<div id="otherMsg" class="tabcontent">
+  <h3>Other Messages</h3>
+  <div id ="divOtherMsgErr" >
+  <table id="tblOtherMsg" style="table-layout:fixed;width:100%;word-wrap:break-word;">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>User</th>
+                <th>Message</th>
+                <th>Date</th>
+            </tr>
+        <tbody>
+            <tr>
+            </tr>
+        </tbody>
+        <thead>
+    </table>
+<div><button class = "nav" id ="btnOtherMsgPrev">Prev</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class = "nav" id ="btnOtherMsgNext">Next</button></div>
+        </div>
+</div>
+
+<script>
+function openTab(evt, tabName) 
+{
+  var i, tabcontent, tablinks;
+  $("#divPostErr").html("");
+  $("#txtMsg").val("");
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+   
+</body>
+</html> 
