@@ -4,7 +4,7 @@
   -- Allows logged in users to post message, view his message and view others messages
   -- Users are pre-defined in the db
 
-2. KS-2 Branch
+2. KS-1 Branch
 ===============
 1. Modification Done in
    -- Login input parameter changed from RequestParam to RequestBody
