@@ -5,8 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MessageRepository extends JpaRepository<Message, Integer>
+public interface MessageRepository extends JpaRepository<Message, Long>
 {
-	Page<Message> findByUserIdOrderByCreatedDateDesc(int userId, Pageable pageable);
-	Page<Message> findByUserIdNotOrderByCreatedDateDesc(int userId, Pageable pageable);
+	Page<Message> findByUserIdOrderByCreatedDateDesc(long userId, Pageable pageable);
+	Page<Message> findByUserIdNotOrderByCreatedDateDesc(long userId, Pageable pageable);
 }

@@ -21,7 +21,7 @@ public class UserService
 		return user;
 	}
 	
-	public User getUserById(int id)
+	public User getUserById(long id)
 	{
 		User user;
 		Optional<User> userOpt;
@@ -33,7 +33,7 @@ public class UserService
 		return user;
 	}
 	
-	public boolean isValiduser(int id)
+	public boolean isValiduser(long id)
 	{
 		return userRepository.existsById(id);
 	}

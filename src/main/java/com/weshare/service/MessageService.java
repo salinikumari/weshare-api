@@ -19,12 +19,12 @@ public class MessageService
 		return true;
 	}
 	
-	public Page<Message> getAllMessagesByUser(int userId, Pageable pageable)
+	public Page<Message> getAllMessagesByUser(long userId, Pageable pageable)
 	{
 		return messageRepository.findByUserIdOrderByCreatedDateDesc(userId, pageable);
 	}
 
-	public Page<Message> getAllMessagesByOthers(int userId, Pageable pageable)
+	public Page<Message> getAllMessagesByOthers(long userId, Pageable pageable)
 	{
 		return messageRepository.findByUserIdNotOrderByCreatedDateDesc(userId, pageable);
 	}

@@ -10,29 +10,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import com.weshare.service.UserService;
 import com.weshare.service.MessageService;
 import com.weshare.entity.User;
 import com.weshare.entity.Message;
 import com.weshare.dto.ErrorDto;
 import com.weshare.dto.MessageDto;
+import com.weshare.dto.ResponseDto;
 import com.weshare.dto.UserDto;
 import com.weshare.exception.UserNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 
-import org.springframework.validation.annotation.Validated;
+//import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
-@Validated 
+//@Validated 
 @RestController
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class WeShareController 
 {
 	@Autowired
@@ -45,36 +45,41 @@ public class WeShareController
 	private ModelMapper modelMapper;
 	
 	@PostMapping("/login")
-    public ResponseEntity<Object> validateLogin(@Size(min = 5, max = 20, message = "Username should be of 5 to 20 chars ")@Pattern(regexp="^[a-zA-Z0-9.\\-\\/+=@_]*$", message ="Username has invalid characters.")@RequestParam String userName, @Size(min = 1, max = 20, message = "Password should be of 5 to 20 chars")@Pattern(regexp="^[a-zA-Z0-9.\\-\\/+=@_]*$", message ="Password has invalid characters.")@RequestParam String password)
+    public ResponseEntity<Object> validateLogin(@RequestBody Map<String, String> credentials)
     {
 		User user;
 		UserDto userDto;
 		ErrorDto errDto;
+		String userName, password;
 		
+		userName = credentials.get("userName");
+		password = credentials.get("password");
 		user = userService.getUser(userName, password);
 		if (user == null)
 		{
-			errDto = new ErrorDto(HttpStatus.NOT_FOUND.value(), "Invalid User.");
-			return new ResponseEntity<>(errDto, HttpStatus.NOT_FOUND);
+			
+			errDto = new ErrorDto(HttpStatus.BAD_REQUEST.value(), "Invalid User.");
+			return new ResponseEntity<>(errDto, HttpStatus.BAD_REQUEST);
 		}
 		userDto = convertToUserDto(user);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-	@PostMapping("/postmsg/{id}")
-	public ResponseEntity<Object> addNewMessage(@Valid @RequestBody MessageDto msgDto, @PathVariable("id") int userId)
+	@PostMapping("/postmsg")
+	public ResponseEntity<?> addNewMessage(@Valid @RequestBody MessageDto msgDto)
 	{
 		Message message;
 		User user;
 		
-		user = userService.getUserById(userId);
+		user = userService.getUserById(msgDto.getUserId());
 		message = convertToMessageEntity(msgDto, user);
 		messageService.addNewMessage(message);
-		return new ResponseEntity<>("The message is posted successfully.", HttpStatus.CREATED);
+		ResponseDto responseDto = new ResponseDto (HttpStatus.OK.value(), "The message is posted successfully.", null, false);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
 	@GetMapping("/viewmsg/{id}")
-	public Page<MessageDto> getAllMessagesByUser(@PathVariable("id") int userId,@PageableDefault(size = 10) Pageable pageable)
+	public Page<MessageDto> getAllMessagesByUser(@PathVariable("id") long userId,@PageableDefault(size = 100) Pageable pageable)
 	{
 		List<MessageDto> msgDtos;
 		Page<Message> msgs;
@@ -89,7 +94,7 @@ public class WeShareController
 	}
 
 	@GetMapping("/viewothermsg/{id}")
-	public Page<MessageDto> getAllMessagesByOthers(@PathVariable("id") int userId, @PageableDefault(size = 10)Pageable pageable)
+	public Page<MessageDto> getAllMessagesByOthers(@PathVariable("id") long userId, @PageableDefault(size = 100)Pageable pageable)
 	{
 		List<MessageDto> msgDtos;
 		Page<Message> msgs;

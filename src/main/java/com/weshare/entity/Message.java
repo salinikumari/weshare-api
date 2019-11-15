@@ -18,7 +18,7 @@ public class Message
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="ID")
-	private int id;
+	private long id;
 	@Column (name = "MESSAGE")
 	private String message;
 	@Column(name = "CREATED_DATE")
@@ -29,11 +29,11 @@ public class Message
 
 	public Message() {}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
