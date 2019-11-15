@@ -11,3 +11,4 @@
    -- Post Message response changed from string to ResponseDto
    -- View Message, ViewOtherMessage response page size increased to 100
    -- Small corrections: Id data type changed from int to long
+2. Added Git ignore
